@@ -1,6 +1,6 @@
-import { Table, Reader, Writer, SntfObject, struct } from './_base';
+import { Table, Reader, Writer, SfntObject, struct } from './_base';
 
-const readWindowsAllCodes = function(tables: Array<SubTable>, sntf: SntfObject) {
+const readWindowsAllCodes = function(tables: Array<SubTable>, sfnt: SfntObject) {
   var codes: any = {};
 
   // Reads windows unicode
@@ -72,7 +72,7 @@ const readWindowsAllCodes = function(tables: Array<SubTable>, sntf: SntfObject) 
     let subHeadKeys = <Array<number>>format2.subHeadKeys;
     let subHeads = <Array<SubTableSubHead>>format2.subHeads;
     let glyphs = <Array<number>>format2.glyphs;
-    let numGlyphs = sntf.maxp._value.numGlyphs;
+    let numGlyphs = sfnt.maxp._value.numGlyphs;
     let index = 0;
 
     for (let i = 0; i < 256; i++) {
@@ -114,7 +114,7 @@ const readWindowsAllCodes = function(tables: Array<SubTable>, sntf: SntfObject) 
   return codes;
 }
 
-const readSubTable = function(reader: Reader, sntf: SntfObject, subTable: SubTable, cmapOffset: number) {
+const readSubTable = function(reader: Reader, sfnt: SfntObject, subTable: SubTable, cmapOffset: number) {
   let glyphIdArray: Array<number> = [];
   let startOffset = cmapOffset + subTable.offset;
   subTable.format = reader.readUint16(startOffset);
@@ -509,7 +509,7 @@ interface SubTable {
 class Cmap extends Table {
   public name = 'cmap';
 
-  public read(reader: Reader, sntf: SntfObject) {
+  public read(reader: Reader, sfnt: SfntObject) {
     reader.seek(this.offset);
     this._value.version = reader.readUint16(); // 编码方式
     this._value.subtableLength = reader.readUint16(); // 表个数
@@ -522,7 +522,7 @@ class Cmap extends Table {
       let platformId = reader.readUint16(offset);
       let encodingId = reader.readUint16(offset + 2);
       let subTableOffset = reader.readUint32(offset + 4);
-      subTables.push(readSubTable(reader, sntf, {
+      subTables.push(readSubTable(reader, sfnt, {
         platformId,
         encodingId,
         offset: subTableOffset
@@ -533,11 +533,11 @@ class Cmap extends Table {
 
     this._value.subTables = subTables;
 
-    return readWindowsAllCodes(subTables, sntf);
+    return readWindowsAllCodes(subTables, sfnt);
   }
 
-  public write(writer: Writer, sntf: SntfObject) {
-    var hasGLyphsOver2Bytes = sntf.support.cmap.hasGLyphsOver2Bytes;
+  public write(writer: Writer, sfnt: SfntObject) {
+    var hasGLyphsOver2Bytes = sfnt.support.cmap.hasGLyphsOver2Bytes;
 
     // write table header.
     writer.writeUint16(0); // version
@@ -545,8 +545,8 @@ class Cmap extends Table {
 
     // header size
     var subTableOffset = 4 + (hasGLyphsOver2Bytes ? 32 : 24);
-    var format4Size = sntf.support.cmap.format4Size;
-    var format0Size = sntf.support.cmap.format0Size;
+    var format4Size = sfnt.support.cmap.format4Size;
+    var format0Size = sfnt.support.cmap.format0Size;
 
     // subtable 4, unicode
     writeSubTableHeader(writer, 0, 3, subTableOffset);
@@ -562,22 +562,22 @@ class Cmap extends Table {
     }
 
     // write tables, order of table seem to be magic, it is taken from TTX tool
-    writeSubTable4(writer, sntf.support.cmap.format4Segments);
-    writeSubTable0(writer, sntf.support.cmap.format0Segments);
+    writeSubTable4(writer, sfnt.support.cmap.format4Segments);
+    writeSubTable0(writer, sfnt.support.cmap.format0Segments);
 
     if (hasGLyphsOver2Bytes) {
-      writeSubTable12(writer, sntf.support.cmap.format12Segments);
+      writeSubTable12(writer, sfnt.support.cmap.format12Segments);
     }
 
 
     return writer;
   }
 
-  public sizeof(sntf: SntfObject) {
-    sntf.support.cmap = {};
+  public sizeof(sfnt: SfntObject) {
+    sfnt.support.cmap = {};
     let glyfUnicodes:Array<[number, number]> = [];
 
-    sntf.glyf.forEach((glyph, index: number) => {
+    sfnt.glyf.forEach((glyph, index: number) => {
 
       var unicodes = glyph.unicode;
 
@@ -600,16 +600,16 @@ class Cmap extends Table {
       return a.unicode - b.unicode;
     });
 
-    sntf.support.cmap.unicodes = glyfUnicodes;
+    sfnt.support.cmap.unicodes = glyfUnicodes;
 
     var unicodes2Bytes = glyfUnicodes;
 
-    sntf.support.cmap.format4Segments = getSegments(unicodes2Bytes, 0xFFFF);
-    sntf.support.cmap.format4Size = 24
-      + sntf.support.cmap.format4Segments.length * 8;
+    sfnt.support.cmap.format4Segments = getSegments(unicodes2Bytes, 0xFFFF);
+    sfnt.support.cmap.format4Size = 24
+      + sfnt.support.cmap.format4Segments.length * 8;
 
-    sntf.support.cmap.format0Segments = getFormat0Segment(glyfUnicodes);
-    sntf.support.cmap.format0Size = 262;
+    sfnt.support.cmap.format0Segments = getFormat0Segment(glyfUnicodes);
+    sfnt.support.cmap.format0Size = 262;
 
     // we need subtable 12 only if found unicodes with > 2 bytes.
     var hasGLyphsOver2Bytes = unicodes2Bytes.some(function (glyph) {
@@ -617,19 +617,19 @@ class Cmap extends Table {
     });
 
     if (hasGLyphsOver2Bytes) {
-      sntf.support.cmap.hasGLyphsOver2Bytes = hasGLyphsOver2Bytes;
+      sfnt.support.cmap.hasGLyphsOver2Bytes = hasGLyphsOver2Bytes;
 
       var unicodes4Bytes = glyfUnicodes;
 
-      sntf.support.cmap.format12Segments = getSegments(unicodes4Bytes);
-      sntf.support.cmap.format12Size = 16
-        + sntf.support.cmap.format12Segments.length * 12;
+      sfnt.support.cmap.format12Segments = getSegments(unicodes4Bytes);
+      sfnt.support.cmap.format12Size = 16
+        + sfnt.support.cmap.format12Segments.length * 12;
     }
 
     var size = 4 + (hasGLyphsOver2Bytes ? 32 : 24) // cmap header
-      + sntf.support.cmap.format0Size // format 0
-      + sntf.support.cmap.format4Size // format 4
-      + (hasGLyphsOver2Bytes ? sntf.support.cmap.format12Size : 0); // format 12
+      + sfnt.support.cmap.format0Size // format 0
+      + sfnt.support.cmap.format4Size // format 4
+      + (hasGLyphsOver2Bytes ? sfnt.support.cmap.format12Size : 0); // format 12
 
     return size;
   }

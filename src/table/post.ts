@@ -1,4 +1,4 @@
-import { Table, Reader, Writer, SntfObject, StructTuple, struct } from './_base';
+import { Table, Reader, Writer, SfntObject, StructTuple, struct } from './_base';
 
 declare var escape: any
 declare var unescape: any
@@ -555,7 +555,7 @@ const postName = {
   257: 'dcroat'
 };
 
-const stringify = function (str?: string) {
+const stringify = function (str: string) {
   if (!str) {
     return str;
   }
@@ -728,10 +728,10 @@ class Posthead extends Table {
 class Post extends Table {
   public name = 'post';
 
-  public read(reader: Reader, sntf: SntfObject) {
+  public read(reader: Reader, sfnt: SfntObject) {
     let format = reader.readFixed(this.offset);
     // reads header
-    let table = new Posthead(this.offset).read(reader, sntf);
+    let table = new Posthead(this.offset).read(reader, sfnt);
 
     // format2
     if (format === 2) {
@@ -743,7 +743,7 @@ class Post extends Table {
       }
 
       var pascalStringOffset = reader.offset;
-      var pascalStringLength = sntf.tables.post.length - (pascalStringOffset - this.offset);
+      var pascalStringLength = sfnt.tables.post.length - (pascalStringOffset - this.offset);
       var pascalStringBytes = reader.readBytes(reader.offset, pascalStringLength);
 
       table.nameIndex = glyphNameIndex; // 设置glyf名字索引
@@ -757,8 +757,8 @@ class Post extends Table {
     return table;
   }
 
-  public write(writer: Writer, sntf: SntfObject) {
-    var post = sntf.post || {
+  public write(writer: Writer, sfnt: SfntObject) {
+    var post = sfnt.post || {
       format: 3
     };
 
@@ -775,16 +775,16 @@ class Post extends Table {
 
     // version 3 不设置post信息
     if (post.format === 2) {
-      var numberOfGlyphs = sntf.glyf.length;
+      var numberOfGlyphs = sfnt.glyf.length;
       writer.writeUint16(numberOfGlyphs); // numberOfGlyphs
       // write glyphNameIndex
-      var nameIndex = sntf.support.post.nameIndex;
+      var nameIndex = sfnt.support.post.nameIndex;
       for (var i = 0, l = nameIndex.length; i < l; i++) {
         writer.writeUint16(nameIndex[i]);
       }
 
       // write names
-      for (let name of sntf.support.post.names) {
+      for (let name of sfnt.support.post.names) {
         writer.writeBytes(name);
       }
     }
@@ -792,15 +792,15 @@ class Post extends Table {
     return writer;
   }
 
-  public size(sntf: SntfObject) {
+  public size(sfnt: SfntObject) {
 
-    var numberOfGlyphs = sntf.glyf.length;
-    sntf.post = sntf.post || {};
-    sntf.post.format = sntf.post.format || 3;
-    sntf.post.maxMemType1 = numberOfGlyphs;
+    var numberOfGlyphs = sfnt.glyf.length;
+    sfnt.post = sfnt.post || {};
+    sfnt.post.format = sfnt.post.format || 3;
+    sfnt.post.maxMemType1 = numberOfGlyphs;
 
     // version 3 不设置post信息
-    if (sntf.post.format === 3 || sntf.post.format === 1) {
+    if (sfnt.post.format === 3 || sfnt.post.format === 1) {
       return 32;
     }
 
@@ -817,7 +817,7 @@ class Post extends Table {
         nameIndexArr.push(0);
       }
       else {
-        var glyf = sntf.glyf[i];
+        var glyf = sfnt.glyf[i];
         var unicode = glyf.unicode ? glyf.unicode[0] : 0;
         var unicodeNameIndex = (<any>unicodeName)[unicode];
         if (undefined !== unicodeNameIndex) {
@@ -841,7 +841,7 @@ class Post extends Table {
       }
     }
 
-    sntf.support.post = {
+    sfnt.support.post = {
       nameIndex: nameIndexArr,
       names: glyphNames
     };

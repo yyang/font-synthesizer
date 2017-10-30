@@ -1,4 +1,4 @@
-import {Table, Reader, Writer, SntfObject, struct} from './_base';
+import {Table, Reader, Writer, SfntObject, struct} from './_base';
 
 class Maxp extends Table {
   public name = 'head';
@@ -20,11 +20,11 @@ class Maxp extends Table {
     ['maxComponentDepth', struct.Int16]
   ];
 
-  public write(writer: Writer, sntf: SntfObject) {
-    return super.write(writer, sntf.support);
+  public write(writer: Writer, sfnt: SfntObject) {
+    return super.write(writer, sfnt.support);
   }
 
-  public size(sntf?: SntfObject) {
+  public size(sfnt?: SfntObject) {
     return 32;
   }
 }

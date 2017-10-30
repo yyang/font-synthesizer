@@ -1,12 +1,12 @@
-import {Table, Reader, Writer, SntfObject, struct} from './_base';
+import {Table, Reader, Writer, SfntObject, struct} from './_base';
 
 class Loca extends Table {
   public name = 'lcoa';
 
-  public read(reader: Reader, sntf: SntfObject) {
+  public read(reader: Reader, sfnt: SfntObject) {
     let offset = this.offset;
-    let indexToLocFormat = sntf.head._value.indexToLocFormat;
-    let numGlyphs = sntf.maxp._value.numGlyphs;
+    let indexToLocFormat = sfnt.head._value.indexToLocFormat;
+    let numGlyphs = sfnt.maxp._value.numGlyphs;
     let wordOffset = [];
 
     reader.seek(offset);
@@ -25,12 +25,12 @@ class Loca extends Table {
     return wordOffset;
   }
 
-  public write(writer: Writer, sntf: SntfObject) {
-    let glyfSupport = sntf.support.glyf;
-    let offset = sntf.support.glyf.offset || 0;
-    let indexToLocFormat = sntf.head._value.indexToLocFormat;
+  public write(writer: Writer, sfnt: SfntObject) {
+    let glyfSupport = sfnt.support.glyf;
+    let offset = sfnt.support.glyf.offset || 0;
+    let indexToLocFormat = sfnt.head._value.indexToLocFormat;
     let sizeRatio = (indexToLocFormat === 0) ? 0.5 : 1;
-    let numGlyphs = sntf.glyf._value.length;
+    let numGlyphs = sfnt.glyf._value.length;
 
     for (let i = 0; i < numGlyphs; ++i) {
       if (indexToLocFormat) {
@@ -53,9 +53,9 @@ class Loca extends Table {
     return writer;
   }
 
-  public size(sntf: SntfObject) {
-    let locaCount = sntf.glyf._value.length + 1;
-    return sntf.head._value.indexToLocFormat ? locaCount * 4 : locaCount * 2;
+  public size(sfnt: SfntObject) {
+    let locaCount = sfnt.glyf._value.length + 1;
+    return sfnt.head._value.indexToLocFormat ? locaCount * 4 : locaCount * 2;
   }
 }
 

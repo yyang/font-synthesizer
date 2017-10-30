@@ -1,4 +1,4 @@
-import { Table, Reader, Writer, SntfObject, StructTuple, struct } from './_base';
+import { Table, Reader, Writer, SfntObject, StructTuple, struct } from './_base';
 import { GlyphMap, GlyphSupport, Glyph, SubGlyf, Coordinate } from './_interface';
 
 const MAX_INSTRUCTION_LENGTH = 5000; // 设置instructions阈值防止读取错误
@@ -215,7 +215,7 @@ const parseCompoundGlyf = function (reader: Reader, glyf: Glyph): Glyph {
   return glyf;
 }
 
-const parse = function (reader: Reader, sntf: SntfObject, offset?: number): Glyph {
+const parse = function (reader: Reader, sfnt: SfntObject, offset?: number): Glyph {
 
   if (null !== offset) {
     reader.seek(offset);
@@ -426,20 +426,20 @@ const getFlags = function(glyf: Glyph, glyfSupport: GlyphSupport) {
 class Glyf extends Table {
   public name = 'glyf';
 
-  public read(reader: Reader, sntf: SntfObject) {
+  public read(reader: Reader, sfnt: SfntObject) {
     let startOffset = this.offset;
-    let loca = sntf.loca;
-    let numGlyphs = sntf.maxp.valueOf().numGlyphs;
+    let loca = sfnt.loca;
+    let numGlyphs = sfnt.maxp.valueOf().numGlyphs;
     let glyphs: Array<Glyph> = [];
 
     reader.seek(startOffset);
 
     // subset
-    let subset = sntf.readOptions.subset;
+    let subset = sfnt.readOptions.subset;
 
     if (subset && subset.length > 0) {
       let subsetMap: GlyphMap = { 0: true }
-      let cmap = sntf.cmap;
+      let cmap = sfnt.cmap;
 
       // unicode to index
       Object.keys(cmap).forEach(c => {
@@ -447,7 +447,7 @@ class Glyf extends Table {
           subsetMap[cmap[c]] = true;
         }
       });
-      sntf.subsetMap = subsetMap;
+      sfnt.subsetMap = subsetMap;
 
       let parsedGlyfMap: GlyphMap = {};
       // parse glpyh recursively, including compund glyphs
@@ -458,7 +458,7 @@ class Glyf extends Table {
           // Current glyph same as next one, no contours;
           glyphs[i] = (loca[i] === loca[i + 1]) ?
             { contours: [] } :
-            parse(reader, sntf, startOffset + loca[i]);
+            parse(reader, sfnt, startOffset + loca[i]);
 
           if (glyphs[i].compound) {
             (<Array<SubGlyf>>glyphs[i].glyfs).forEach(subGlyf => {
@@ -485,21 +485,21 @@ class Glyf extends Table {
       // Current glyph same as next one, no contours;
       glyphs[i] = (loca[i] === loca[i + 1]) ?
         { contours: [] } :
-        parse(reader, sntf, startOffset + loca[i]);
+        parse(reader, sfnt, startOffset + loca[i]);
       i++;
     }
 
     // Last glyph
-    glyphs[i] = ((sntf.tables.glyf.length - loca[i]) < 5) ?
+    glyphs[i] = ((sfnt.tables.glyf.length - loca[i]) < 5) ?
       { contours: [] } :
-      parse(reader, sntf, startOffset + loca[i]);
+      parse(reader, sfnt, startOffset + loca[i]);
 
     return glyphs;
   }
 
-  public write(writer: Writer, sntf: SntfObject) {
-    let hinting = sntf.writeOptions ? sntf.writeOptions.hinting : false;
-    sntf.glyf.forEach((glyf: Glyph, index: number) => {
+  public write(writer: Writer, sfnt: SfntObject) {
+    let hinting = sfnt.writeOptions ? sfnt.writeOptions.hinting : false;
+    sfnt.glyf.forEach((glyf: Glyph, index: number) => {
 
       // Ignore empty glyphs
       if (!glyf.compound && (!glyf.contours || 0 === glyf.contours.length)) {
@@ -595,12 +595,12 @@ class Glyf extends Table {
         }
 
         // Flags
-        let flags = sntf.support.glyf[index].flags;
+        let flags = sfnt.support.glyf[index].flags;
         for (let flag of flags) {
           writer.writeUint8(flag);
         }
 
-        for (let xCoord of sntf.support.glyf[index].xCoord) {
+        for (let xCoord of sfnt.support.glyf[index].xCoord) {
           if (0 <= xCoord && xCoord <= 0xFF) {
             writer.writeUint8(xCoord);
           } else {
@@ -608,7 +608,7 @@ class Glyf extends Table {
           }
         }
 
-        for (let yCoord of sntf.support.glyf[index].yCoord) {
+        for (let yCoord of sfnt.support.glyf[index].yCoord) {
           if (0 <= yCoord && yCoord <= 0xFF) {
             writer.writeUint8(yCoord);
           } else {
@@ -618,7 +618,7 @@ class Glyf extends Table {
       }
 
       // Align 4 bytes
-      let glyfSize = sntf.support.glyf[index].glyfSize;
+      let glyfSize = sfnt.support.glyf[index].glyfSize;
 
       if (glyfSize % 4) {
         writer.writeEmpty(4 - glyfSize % 4);
@@ -628,12 +628,12 @@ class Glyf extends Table {
     return writer;
   }
 
-  public sizeof(sntf: SntfObject) {
-    sntf.support.glyf = [];
+  public sizeof(sfnt: SfntObject) {
+    sfnt.support.glyf = [];
     let tableSize = 0;
-    let hinting = sntf.writeOptions ? sntf.writeOptions.hinting : false;
+    let hinting = sfnt.writeOptions ? sfnt.writeOptions.hinting : false;
  
-    for (let glyf of <Array<Glyph>>sntf.glyf) {
+    for (let glyf of <Array<Glyph>>sfnt.glyf) {
       var glyfSupport: GlyphSupport = {};
       glyfSupport = glyf.compound ? glyfSupport : getFlags(glyf, glyfSupport);
 
@@ -650,15 +650,15 @@ class Glyf extends Table {
       glyfSupport.glyfSize = glyfSize;
       glyfSupport.size = size;
 
-      sntf.support.glyf.push(glyfSupport);
+      sfnt.support.glyf.push(glyfSupport);
 
       tableSize += size;
     };
 
-    sntf.support.glyf.tableSize = tableSize;
+    sfnt.support.glyf.tableSize = tableSize;
     // Copy to head
-    sntf.head.indexToLocFormat = tableSize > 65536 ? 1 : 0;
+    sfnt.head.indexToLocFormat = tableSize > 65536 ? 1 : 0;
 
-    return sntf.support.glyf.tableSize;
+    return sfnt.support.glyf.tableSize;
   }
 }

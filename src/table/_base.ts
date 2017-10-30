@@ -1,6 +1,6 @@
 import Reader from '../reader';
 import Writer from '../writer';
-import SntfObject from '../sntfobject';
+import SfntObject from '../sfntobject';
 
 const struct = {
   Int8: 1,
@@ -52,7 +52,7 @@ class Table {
 
   }
 
-  public read(reader: Reader, ttf: SntfObject) {
+  public read(reader: Reader, ttf: SfntObject) {
     let offset = this.offset;
     let value: any = {};
 
@@ -89,8 +89,8 @@ class Table {
     return this.valueOf();
   }
 
-  public write(writer: Writer, sntf: SntfObject) {
-    let table = sntf[this.name];
+  public write(writer: Writer, sfnt: SfntObject) {
+    let table = sfnt[this.name];
 
     if (!table) {
       throw new Error('Table not found');
@@ -125,7 +125,7 @@ class Table {
     return writer;
   }
 
-  public size(sntf?: SntfObject) {
+  public size(sfnt?: SfntObject) {
     let size = 0;
 
     for (let item of this.struct) {
@@ -160,4 +160,4 @@ class Table {
 
 }
 
-export {Table, Reader, Writer, SntfObject, StructTuple, struct};
+export {Table, Reader, Writer, SfntObject, StructTuple, struct};

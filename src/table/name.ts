@@ -1,4 +1,4 @@
-import { Table, Reader, Writer, SntfObject, StructTuple, struct } from './_base';
+import { Table, Reader, Writer, SfntObject, StructTuple, struct } from './_base';
 
 class Name extends Table {
   public name = 'name';
@@ -67,10 +67,10 @@ class Name extends Table {
     }
 
     return names;
-  },
+  }
 
-  public write(writer: Writer, sntf: SntfObject) {
-    var nameRecordTbl = sntf.support.name;
+  public write(writer: Writer, sfnt: SfntObject) {
+    var nameRecordTbl = sfnt.support.name;
 
     writer.writeUint16(0); // format
     writer.writeUint16(nameRecordTbl.length); // count
@@ -96,8 +96,8 @@ class Name extends Table {
     return writer;
   }
 
-  public size(sntf: SntfObject) {
-    var names = sntf.name;
+  public size(sfnt: SfntObject) {
+    var names = sfnt.name;
     var nameRecordTbl = [];
 
     // 写入name信息
@@ -148,7 +148,7 @@ class Name extends Table {
     });
 
     // 保存预处理信息
-    sntf.support.name = nameRecordTbl;
+    sfnt.support.name = nameRecordTbl;
 
     return size;
   }

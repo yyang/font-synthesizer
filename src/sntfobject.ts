@@ -2,13 +2,13 @@ import Writer from './writer';
 import Reader from './reader';
 import Directory from './table/directory';
 
-interface SntfObjectOptions {
+interface SfntObjectOptions {
   offset?: number;
   length?: number;
   littleEndian?: boolean;
 }
 
-class SntfObject {
+class SfntObject {
   private version: number;
   private searchRange: number;
   private entrySelector: number;
@@ -17,9 +17,9 @@ class SntfObject {
   public tables: any;
   [property: string]: any;
 
-  constructor(buffer: Buffer, type: String, options?: SntfObjectOptions = {}) {
+  constructor(buffer: Buffer, type: String, options: SfntObjectOptions = {}) {
     if (type !== 'ttf') {
-      throw new Error('Unsupported SNTF Input Type: ' + type);
+      throw new Error('Unsupported sfnt Input Type: ' + type);
     }
 
     let reader = new Reader(buffer);
@@ -73,4 +73,4 @@ class SntfObject {
 
 }
 
-export default SntfObject
+export default SfntObject

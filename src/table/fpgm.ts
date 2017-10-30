@@ -1,21 +1,21 @@
-import {Table, Reader, Writer, SntfObject, StructTuple, struct} from './_base';
+import {Table, Reader, Writer, SfntObject, StructTuple, struct} from './_base';
 
 class Fpgm extends Table {
   public name = 'fpgm';
 
-  public read(reader: Reader, sntf: SntfObject) {
-    return reader.readBytes(this.offset, sntf.tables.fpgm.length);
+  public read(reader: Reader, sfnt: SfntObject) {
+    return reader.readBytes(this.offset, sfnt.tables.fpgm.length);
   }
 
-  public write(writer: Writer, sntf: SntfObject) {
-    if (sntf.fpgm) {
-      writer.writeBytes(sntf.fpgm, sntf.fpgm.length);
+  public write(writer: Writer, sfnt: SfntObject) {
+    if (sfnt.fpgm) {
+      writer.writeBytes(sfnt.fpgm, sfnt.fpgm.length);
     }
     return writer;
   }
 
-  public size(sntf: SntfObject) {
-    return sntf.fpgm ? sntf.fpgm.length : 0;
+  public size(sfnt: SfntObject) {
+    return sfnt.fpgm ? sfnt.fpgm.length : 0;
   }
 }
 

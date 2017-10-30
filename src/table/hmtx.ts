@@ -1,14 +1,14 @@
-import { Table, Reader, Writer, SntfObject, StructTuple, struct } from './_base';
+import { Table, Reader, Writer, SfntObject, StructTuple, struct } from './_base';
 import { HMetric } from './_interface';
 
 class Hmtx extends Table {
   public name = 'hmtx';
 
-  public read(reader: Reader, sntf: SntfObject) {
+  public read(reader: Reader, sfnt: SfntObject) {
     let offset = this.offset;
     reader.seek(offset);
 
-    let numOfLongHorMetrics = sntf.hhea.numOfLongHorMetrics;
+    let numOfLongHorMetrics = sfnt.hhea.numOfLongHorMetrics;
     let hMetrics: Array<HMetric> = [];
     for (let i = 0; i < numOfLongHorMetrics; ++i) {
       let advanceWidth = reader.readUint16();
@@ -18,7 +18,7 @@ class Hmtx extends Table {
 
     // 最后一个宽度
     let lastAdvanceWidth = hMetrics[numOfLongHorMetrics - 1].advanceWidth;
-    let numOfLast = sntf.maxp.numGlyphs - numOfLongHorMetrics;
+    let numOfLast = sfnt.maxp.numGlyphs - numOfLongHorMetrics;
 
     // 获取后续的hmetrics
     for (let i = 0; i < numOfLast; ++i) {
@@ -30,42 +30,42 @@ class Hmtx extends Table {
 
   }
 
-  public write(writer: Writer, sntf: SntfObject) {
+  public write(writer: Writer, sfnt: SfntObject) {
     let i;
-    let numOfLongHorMetrics = sntf.hhea.numOfLongHorMetrics;
+    let numOfLongHorMetrics = sfnt.hhea.numOfLongHorMetrics;
     for (i = 0; i < numOfLongHorMetrics; ++i) {
-      writer.writeUint16(sntf.glyf[i].advanceWidth);
-      writer.writeInt16(sntf.glyf[i].leftSideBearing);
+      writer.writeUint16(sfnt.glyf[i].advanceWidth);
+      writer.writeInt16(sfnt.glyf[i].leftSideBearing);
     }
 
     // 最后一个宽度
-    let numOfLast = sntf.glyf.length - numOfLongHorMetrics;
+    let numOfLast = sfnt.glyf.length - numOfLongHorMetrics;
 
     for (i = 0; i < numOfLast; ++i) {
-      writer.writeInt16(sntf.glyf[numOfLongHorMetrics + i].leftSideBearing);
+      writer.writeInt16(sfnt.glyf[numOfLongHorMetrics + i].leftSideBearing);
     }
 
     return writer;
   }
 
-  public size(sntf: SntfObject) {
+  public size(sfnt: SfntObject) {
 
     // 计算同最后一个advanceWidth相等的元素个数
     let numOfLast = 0;
     // 最后一个advanceWidth
-    let advanceWidth = sntf.glyf[sntf.glyf.length - 1].advanceWidth;
+    let advanceWidth = sfnt.glyf[sfnt.glyf.length - 1].advanceWidth;
 
-    for (let i = sntf.glyf.length - 2; i >= 0; i--) {
-      if (advanceWidth === sntf.glyf[i].advanceWidth) {
+    for (let i = sfnt.glyf.length - 2; i >= 0; i--) {
+      if (advanceWidth === sfnt.glyf[i].advanceWidth) {
         numOfLast++;
       } else {
         break;
       }
     }
 
-    sntf.hhea.numOfLongHorMetrics = sntf.glyf.length - numOfLast;
+    sfnt.hhea.numOfLongHorMetrics = sfnt.glyf.length - numOfLast;
 
-    return 4 * sntf.hhea.numOfLongHorMetrics + 2 * numOfLast;
+    return 4 * sfnt.hhea.numOfLongHorMetrics + 2 * numOfLast;
   }
 }
 

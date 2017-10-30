@@ -1,4 +1,4 @@
-import {Table, Reader, Writer, SntfObject, StructTuple, struct} from './_base';
+import {Table, Reader, Writer, SfntObject, StructTuple, struct} from './_base';
 
 class Head extends Table {
   public name = 'head';

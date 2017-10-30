@@ -1,22 +1,22 @@
-import { Table, Reader, Writer, SntfObject, StructTuple, struct } from './_base';
+import { Table, Reader, Writer, SfntObject, StructTuple, struct } from './_base';
 
 class Cvt extends Table {
   public name = 'cvt';
 
-  public read(reader: Reader, sntf: SntfObject) {
-    return reader.readBytes(this.offset, sntf.tables.cvt.length);
+  public read(reader: Reader, sfnt: SfntObject) {
+    return reader.readBytes(this.offset, sfnt.tables.cvt.length);
   }
 
-  public write(writer: Writer, sntf: SntfObject) {
-    if (sntf.cvt) {
-      writer.writeBytes(sntf.cvt, sntf.cvt.length);
+  public write(writer: Writer, sfnt: SfntObject) {
+    if (sfnt.cvt) {
+      writer.writeBytes(sfnt.cvt, sfnt.cvt.length);
     }
 
     return writer;
   }
 
-  public size(sntf: SntfObject) {
-    return sntf.cvt ? sntf.cvt.length : 0;
+  public size(sfnt: SfntObject) {
+    return sfnt.cvt ? sfnt.cvt.length : 0;
   }
 }
 

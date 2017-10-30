@@ -1,11 +1,11 @@
-import {Table, Reader, Writer, SntfObject, struct} from './_base';
+import {Table, Reader, Writer, SfntObject, struct} from './_base';
 
 class Directory extends Table {
   public name = 'directory';
 
-  public read(reader: Reader, sntf: SntfObject) {
+  public read(reader: Reader, sfnt: SfntObject) {
     let tables:any = {};
-    let numTables = sntf.numTables;
+    let numTables = sfnt.numTables;
     let offset = this.offset;
     let length = numTables * 16;
 
@@ -23,8 +23,8 @@ class Directory extends Table {
     return tables;
   }
 
-  public write(writer: Writer, sntf: SntfObject) {
-    let tables = sntf.support.tables;
+  public write(writer: Writer, sfnt: SfntObject) {
+    let tables = sfnt.support.tables;
 
     for (var i = 0, l = tables.length; i < l; i++) {
       writer.writeString((tables[i].name + '    ').slice(0, 4));
@@ -36,8 +36,8 @@ class Directory extends Table {
     return writer;
   }
 
-  public size(sntf: SntfObject) {
-    return sntf.numTables * 16;
+  public size(sfnt: SfntObject) {
+    return sfnt.numTables * 16;
   }
 }
 

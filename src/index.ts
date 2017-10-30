@@ -1,6 +1,6 @@
 import fs from 'fs';
 import Reader from './reader';
-import SntfObject from './sntfobject';
+import SfntObject from './sfntobject';
 
 const utils = require('./utils');
 
@@ -11,14 +11,14 @@ class Font {
   public readonly language: string;
 
   private sourceFile: Buffer;
-  private sntf: SntfObject;
+  private sfnt: SfntObject;
 
   constructor(name: string, path: string, weight = 400, language = 'en-US') {
     this.name = name;
     this.weight = weight;
     this.language = language;
     this.sourceFile = fs.readFileSync(path);
-    this.sntf = new SntfObject(this.sourceFile, 'ttf');
+    this.sfnt = new SfntObject(this.sourceFile, 'ttf');
   }
 
   renderCssSubset(subset: string) {

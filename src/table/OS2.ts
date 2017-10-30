@@ -1,4 +1,4 @@
-import { Table, Reader, Writer, SntfObject, StructTuple, struct } from './_base';
+import { Table, Reader, Writer, SfntObject, StructTuple, struct } from './_base';
 import { Glyph } from './_interface';
 
 const sharedStruct = [
@@ -96,7 +96,7 @@ class OS2 extends Table {
   public name = 'OS/2';
   protected struct = sharedStruct;
 
-  public read(reader: Reader, sntf: SntfObject) {
+  public read(reader: Reader, sfnt: SfntObject) {
     let format = reader.readUint16(this.offset);
     let struct = this.struct;
 
@@ -108,7 +108,7 @@ class OS2 extends Table {
       struct = struct.slice(0, 41);
     }
 
-    let tbl = new OS2Head(this.offset).read(reader, sntf);
+    let tbl = new OS2Head(this.offset).read(reader, sfnt);
 
     // add properties from other tables
     let os2Fields = {
@@ -124,7 +124,7 @@ class OS2 extends Table {
     return extend(os2Fields, tbl);
   }
 
-  public size(sntf: SntfObject) {
+  public size(sfnt: SfntObject) {
 
     // update stats from other tables
     // header
@@ -153,33 +153,33 @@ class OS2 extends Table {
     let maxComponentElements = 0;
 
     let glyfNotEmpty = 0; // 非空glyf
-    let hinting = sntf.writeOptions ? sntf.writeOptions.hinting : false;
+    let hinting = sfnt.writeOptions ? sfnt.writeOptions.hinting : false;
 
     // 计算instructions和functiondefs
     if (hinting) {
 
-      if (sntf.cvt) {
-        maxSizeOfInstructions = Math.max(maxSizeOfInstructions, sntf.cvt.length);
+      if (sfnt.cvt) {
+        maxSizeOfInstructions = Math.max(maxSizeOfInstructions, sfnt.cvt.length);
       }
 
-      if (sntf.prep) {
-        maxSizeOfInstructions = Math.max(maxSizeOfInstructions, sntf.prep.length);
+      if (sfnt.prep) {
+        maxSizeOfInstructions = Math.max(maxSizeOfInstructions, sfnt.prep.length);
       }
 
-      if (sntf.fpgm) {
-        maxSizeOfInstructions = Math.max(maxSizeOfInstructions, sntf.fpgm.length);
+      if (sfnt.fpgm) {
+        maxSizeOfInstructions = Math.max(maxSizeOfInstructions, sfnt.fpgm.length);
       }
 
     }
 
-    sntf.glyf.forEach((glyf: Glyph, index: number) => {
+    sfnt.glyf.forEach((glyf: Glyph, index: number) => {
 
       // Control Points
       if (glyf.compound) {
         let compositeContours = 0;
         let compositePoints = 0;
         for (let subGlyf of glyf.glyfs) {
-          let cGlyf: Glyph = sntf.glyf[subGlyf.glyphIndex];
+          let cGlyf: Glyph = sfnt.glyf[subGlyf.glyphIndex];
           if (!cGlyf) {
             return;
           }
@@ -213,19 +213,19 @@ class OS2 extends Table {
       // 统计边界信息
       if (glyf.compound || glyf.contours && glyf.contours.length) {
 
-        if (glyf.xMin < xMin) {
+        if (<number>glyf.xMin < xMin) {
           xMin = glyf.xMin;
         }
 
-        if (glyf.yMin < yMin) {
+        if (<number>glyf.yMin < yMin) {
           yMin = glyf.yMin;
         }
 
-        if (glyf.xMax > xMax) {
+        if (<number>glyf.xMax > xMax) {
           xMax = glyf.xMax;
         }
 
-        if (glyf.yMax > yMax) {
+        if (<number>glyf.yMax > yMax) {
           yMax = glyf.yMax;
         }
 
@@ -252,48 +252,48 @@ class OS2 extends Table {
     });
 
     // 重新设置version 4
-    sntf['OS/2'].version = 0x4;
-    sntf['OS/2'].achVendID = (sntf['OS/2'].achVendID + '    ').slice(0, 4);
-    sntf['OS/2'].xAvgCharWidth = xAvgCharWidth / (glyfNotEmpty || 1);
-    sntf['OS/2'].ulUnicodeRange2 = 268435456;
-    sntf['OS/2'].usFirstCharIndex = usFirstCharIndex;
-    sntf['OS/2'].usLastCharIndex = usLastCharIndex;
+    sfnt['OS/2'].version = 0x4;
+    sfnt['OS/2'].achVendID = (sfnt['OS/2'].achVendID + '    ').slice(0, 4);
+    sfnt['OS/2'].xAvgCharWidth = xAvgCharWidth / (glyfNotEmpty || 1);
+    sfnt['OS/2'].ulUnicodeRange2 = 268435456;
+    sfnt['OS/2'].usFirstCharIndex = usFirstCharIndex;
+    sfnt['OS/2'].usLastCharIndex = usLastCharIndex;
 
     // rewrite hhea
-    sntf.hhea.version = sntf.hhea.version || 0x1;
-    sntf.hhea.advanceWidthMax = advanceWidthMax;
-    sntf.hhea.minLeftSideBearing = minLeftSideBearing;
-    sntf.hhea.minRightSideBearing = minRightSideBearing;
-    sntf.hhea.xMaxExtent = xMaxExtent;
+    sfnt.hhea.version = sfnt.hhea.version || 0x1;
+    sfnt.hhea.advanceWidthMax = advanceWidthMax;
+    sfnt.hhea.minLeftSideBearing = minLeftSideBearing;
+    sfnt.hhea.minRightSideBearing = minRightSideBearing;
+    sfnt.hhea.xMaxExtent = xMaxExtent;
 
     // rewrite head
-    sntf.head.version = sntf.head.version || 0x1;
-    sntf.head.lowestRecPPEM = sntf.head.lowestRecPPEM || 0x8;
-    sntf.head.xMin = xMin;
-    sntf.head.yMin = yMin;
-    sntf.head.xMax = xMax;
-    sntf.head.yMax = yMax;
+    sfnt.head.version = sfnt.head.version || 0x1;
+    sfnt.head.lowestRecPPEM = sfnt.head.lowestRecPPEM || 0x8;
+    sfnt.head.xMin = xMin;
+    sfnt.head.yMin = yMin;
+    sfnt.head.xMax = xMax;
+    sfnt.head.yMax = yMax;
 
     // 这里根据存储的maxp来设置新的maxp，避免重复计算maxp
-    sntf.maxp = sntf.maxp || {};
-    sntf.support.maxp = {
+    sfnt.maxp = sfnt.maxp || {};
+    sfnt.support.maxp = {
       version: 1.0,
-      numGlyphs: sntf.glyf.length,
+      numGlyphs: sfnt.glyf.length,
       maxPoints: maxPoints,
       maxContours: maxContours,
       maxCompositePoints: maxCompositePoints,
       maxCompositeContours: maxCompositeContours,
-      maxZones: sntf.maxp.maxZones || 0,
-      maxTwilightPoints: sntf.maxp.maxTwilightPoints || 0,
-      maxStorage: sntf.maxp.maxStorage || 0,
-      maxFunctionDefs: sntf.maxp.maxFunctionDefs || 0,
-      maxStackElements: sntf.maxp.maxStackElements || 0,
+      maxZones: sfnt.maxp.maxZones || 0,
+      maxTwilightPoints: sfnt.maxp.maxTwilightPoints || 0,
+      maxStorage: sfnt.maxp.maxStorage || 0,
+      maxFunctionDefs: sfnt.maxp.maxFunctionDefs || 0,
+      maxStackElements: sfnt.maxp.maxStackElements || 0,
       maxSizeOfInstructions: maxSizeOfInstructions,
       maxComponentElements: maxComponentElements,
       maxComponentDepth: maxComponentElements ? 1 : 0
     };
 
-    return super.size(sntf);
+    return super.size(sfnt);
   }
 }
 
