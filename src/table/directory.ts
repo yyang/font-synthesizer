@@ -2,7 +2,6 @@ import {Table, Reader, Writer, SntfObject, struct} from './_base';
 
 class Directory extends Table {
   public name = 'directory';
-  protected struct = [];
 
   public read(reader: Reader, sntf: SntfObject) {
     let tables:any = {};

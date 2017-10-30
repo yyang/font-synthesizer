@@ -1,5 +1,5 @@
 class Reader {
-  private offset: number;
+  public offset: number;
   private length: number;
   private littleEndian: boolean;
   private view: DataView;

@@ -65,7 +65,7 @@ class Table {
         case struct.Int8:   value[item[0]] = reader.readInt8(); break;
         case struct.Uint8:  value[item[0]] = reader.readUint8(); break;
         case struct.Int16:  value[item[0]] = reader.readInt16(); break;
-        case struct.Uint16: value[itaem[0]] = reader.readUint16(); break;
+        case struct.Uint16: value[item[0]] = reader.readUint16(); break;
         case struct.Int32:  value[item[0]] = reader.readInt32(); break;
         case struct.Uint32: value[item[0]] = reader.readUint32(); break;
         case struct.Fixed:  value[item[0]] = reader.readFixed(); break;
@@ -89,8 +89,8 @@ class Table {
     return this.valueOf();
   }
 
-  public write(writer: Writer, ttf: SntfObject) {
-    let table = ttf[this.name];
+  public write(writer: Writer, sntf: SntfObject) {
+    let table = sntf[this.name];
 
     if (!table) {
       throw new Error('Table not found');
@@ -160,4 +160,4 @@ class Table {
 
 }
 
-export {Table, Reader, Writer, SntfObject, struct};
+export {Table, Reader, Writer, SntfObject, StructTuple, struct};
